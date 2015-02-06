@@ -11,6 +11,7 @@ import org.springframework.beans.factory.InitializingBean;
 /**
  * CuratorFramework 工厂类
  *
+ * @author liangd.chen
  */
 public class CuratorFrameworkFactoryBean implements FactoryBean<CuratorFramework>, InitializingBean, DisposableBean {
     //curator zk连接客户端

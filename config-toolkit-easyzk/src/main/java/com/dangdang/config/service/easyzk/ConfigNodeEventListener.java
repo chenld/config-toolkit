@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
  * 监听器
  * 
  * @author <a href="mailto:wangyuxuan@dangdang.com">Yuxuan Wang</a>
- *
+ * @author liangd.chen
  */
 public final class ConfigNodeEventListener implements CuratorListener {
 

@@ -41,6 +41,8 @@ import static org.springframework.util.ReflectionUtils.*;
  * 配置的核心类
  * 1.初始时，标注的字段从ZK节点获取并赋值；
  * 2.ZK节点路径数值发生变化后，能自动获取值；
+ *
+ * @author liangd.chen
  */
 public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware, PriorityOrdered, CuratorListener, InitializingBean {
 

@@ -21,7 +21,7 @@ import com.google.common.base.Preconditions;
  * 基本配置
  * 
  * @author <a href="mailto:wangyuxuan@dangdang.com">Yuxuan Wang</a>
- *
+ * @author liangd.chen
  */
 public class ConfigProfile {
 
