@@ -41,7 +41,7 @@ public class ZooKeeperTest {
 
         Thread.sleep(5000);
         System.out.println(annotationTarget.toString());
-        //Thread.currentThread().join();
+        Thread.currentThread().join();
     }
 
     @Before

@@ -2,7 +2,10 @@ package com.dangdang.config.service.easyzk.support.spring;
 
 import com.dangdang.config.service.easyzk.ConfigProfile;
 import com.dangdang.config.service.easyzk.annotation.ZooKeeper;
+import com.google.common.base.Charsets;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.api.CuratorEvent;
+import org.apache.curator.framework.api.CuratorListener;
 import org.apache.curator.framework.api.GetDataBuilder;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.KeeperException.ConnectionLossException;
@@ -19,6 +22,7 @@ import org.springframework.beans.TypeConverter;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.core.MethodParameter;
@@ -29,6 +33,7 @@ import org.springframework.util.ReflectionUtils.*;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.springframework.util.ReflectionUtils.*;
 
@@ -36,9 +41,8 @@ import static org.springframework.util.ReflectionUtils.*;
  * 配置的核心类
  * 1.初始时，标注的字段从ZK节点获取并赋值；
  * 2.ZK节点路径数值发生变化后，能自动获取值；
- *
  */
-public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware, PriorityOrdered {
+public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware, PriorityOrdered, CuratorListener, InitializingBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZooKeeperAnnotationBeanPostProcessor.class);
 
@@ -58,14 +62,16 @@ public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, 
 
     private int order = Ordered.LOWEST_PRECEDENCE - 2;
 
-    private CuratorFramework curatorFramework;
+    private CuratorFramework curator;
 
     private ConfigProfile configProfile;
 
     private TypeConverter typeConverter;
 
-    public void setCuratorFramework(CuratorFramework curator) {
-        this.curatorFramework = curator;
+    private ConcurrentHashMap<String, Setter<String>> setters = new ConcurrentHashMap<String, Setter<String>>();
+
+    public void setCurator(CuratorFramework curator) {
+        this.curator = curator;
     }
 
     public void setConfigProfile(ConfigProfile configProfile) {
@@ -122,28 +128,18 @@ public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, 
     }
 
     @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+    public Object postProcessAfterInitialization(Object bean, String beanName) {
         return bean;
     }
 
-    protected void lookup(final String path, final Setter setter) {
-        lookup(path, setter, new Watcher() {
-            @Override
-            public void process(WatchedEvent event) {
-                // check that path and event.getPath match?
-                LOG.info("Watcher for '{}' received watched event: {}", path, event);
-                if (event.getType() == EventType.NodeDataChanged) {
-                    lookup(path, setter, this);
-                }
-            }
-        });
-    }
-
-    protected void lookup(String path, Setter setter, Watcher watcher) {
+    protected void lookup(String path, Setter setter) {
         try {
-            GetDataBuilder getDataBuilder = curatorFramework.getData();
+            GetDataBuilder getDataBuilder = curator.getData();
             if (setter.isValid()) {
-                getDataBuilder.usingWatcher(watcher);
+                //getDataBuilder.usingWatcher(watcher);
+                if (!setters.containsKey(path)) {
+                    setters.put(path, setter);
+                }
             }
             byte[] data = getDataBuilder.forPath(path);
             setter.setValue(new String(data, "UTF-8"));
@@ -173,11 +169,26 @@ public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, 
         return LOWEST_PRECEDENCE - 1;
     }
 
+    /**
+     * Invoked by a BeanFactory after it has set all bean properties supplied
+     * (and satisfied BeanFactoryAware and ApplicationContextAware).
+     * <p>This method allows the bean instance to perform initialization only
+     * possible when all bean properties have been set and to throw an
+     * exception in the event of misconfiguration.
+     *
+     * @throws Exception in the event of misconfiguration (such
+     *                   as failure to set an essential property) or if initialization fails.
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        curator.getCuratorListenable().addListener(this);
+    }
+
     private static abstract class Setter<T> {
 
         protected final WeakReference<Object> target;
 
-        private  T defaultValue;
+        private T defaultValue;
 
         public Setter(final Object target, T defaultValue) {
             this.target = new WeakReference<Object>(target);
@@ -192,8 +203,8 @@ public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, 
             return target.get();
         }
 
-        public T getValue(T value){
-            if(value == null && defaultValue != null){
+        public T getValue(T value) {
+            if (value == null && defaultValue != null) {
                 return defaultValue;
             }
 
@@ -206,14 +217,41 @@ public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, 
 
     /**
      * 构建@ZooKeeper 标注的ZK路径
+     *
      * @param zooKeeper
-     * @return
+     * @return ZK key节点全路径
      */
-    private String makePath(ZooKeeper zooKeeper){
+    private String makePath(ZooKeeper zooKeeper) {
         String node = zooKeeper.node();
         String key = zooKeeper.key();
         String path = ZKPaths.makePath(node, key);
         return ZKPaths.makePath(configProfile.getRootNode(), path);
     }
 
+    /**
+     * Called when a background task has completed or a watch has triggered
+     *
+     * @param client client
+     * @param event  the event
+     * @throws Exception any errors
+     */
+    @Override
+    public void eventReceived(CuratorFramework client, CuratorEvent event) throws Exception {
+        final WatchedEvent watchedEvent = event.getWatchedEvent();
+        if (watchedEvent != null
+                && watchedEvent.getState() == Watcher.Event.KeeperState.SyncConnected
+                && watchedEvent.getType() == EventType.NodeDataChanged) {
+            String nodePath = watchedEvent.getPath();
+            Setter<String> setter = setters.get(nodePath);
+
+            if (setter != null) {
+                GetDataBuilder data = client.getData();
+                String value = new String(data.watched().forPath(nodePath), Charsets.UTF_8);
+                setter.setValue(value);
+            }
+
+        }
+
+
+    }
 }

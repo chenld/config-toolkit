@@ -7,6 +7,18 @@
         <constructor-arg name="openLocalCache" value="false" />
     </bean>
 
+    <bean id="curatorFramework" class="com.dangdang.config.service.easyzk.support.spring.CuratorFrameworkFactoryBean">
+        <property name="connectString" value="localhost:2181"/>
+        <property name="namespace" value="test"/>
+        <property name="retryPolicy" ref="exponentialBackoffRetry"/>
+        <!--<property name="sessionTimeout" value="50000" />-->
+    </bean>
+
+    <bean id="exponentialBackoffRetry" class="org.apache.curator.retry.ExponentialBackoffRetry">
+        <constructor-arg index="0" type="int" value="1000"/>
+        <constructor-arg index="1" type="int" value="3"/>
+    </bean>
+
     <bean id="configFactory" class="com.dangdang.config.service.easyzk.ConfigFactory">
         <!-- Your module node in zookeeper -->
         <constructor-arg name="configProfile" ref="configProfile"/>
@@ -31,20 +43,10 @@
         <property name="propertySources" ref="zookeeperSources"/>
     </bean>
 
-    <bean id="curatorFramework" class="com.dangdang.config.service.easyzk.support.spring.CuratorFrameworkFactoryBean">
-        <property name="connectString" value="localhost:2181"/>
-        <property name="namespace" value="test"/>
-        <property name="retryPolicy" ref="exponentialBackoffRetry"/>
-        <!--<property name="sessionTimeout" value="50000" />-->
-    </bean>
 
-    <bean id="exponentialBackoffRetry" class="org.apache.curator.retry.ExponentialBackoffRetry">
-        <constructor-arg index="0" type="int" value="1000"/>
-        <constructor-arg index="1" type="int" value="3"/>
-    </bean>
 
     <bean class="com.dangdang.config.service.easyzk.support.spring.ZooKeeperAnnotationBeanPostProcessor">
-        <property name="curatorFramework" ref="curatorFramework"/>
+        <property name="curator" ref="curatorFramework"/>
         <property name="configProfile" ref="configProfile" />
     </bean>
 
