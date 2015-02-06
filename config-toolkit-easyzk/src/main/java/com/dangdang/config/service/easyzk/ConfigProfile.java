@@ -15,10 +15,6 @@
  */
 package com.dangdang.config.service.easyzk;
 
-import org.apache.curator.RetryPolicy;
-import org.apache.curator.retry.ExponentialBackoffRetry;
-
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
 /**
@@ -30,19 +26,9 @@ import com.google.common.base.Preconditions;
 public class ConfigProfile {
 
 	/**
-	 * zookeeper地址
-	 */
-	private final String connectStr;
-
-	/**
 	 * 项目配置根目录
 	 */
 	private final String rootNode;
-
-	/**
-	 * 重试策略
-	 */
-	private final RetryPolicy retryPolicy;
 
 	private final boolean openLocalCache;
 
@@ -55,30 +41,17 @@ public class ConfigProfile {
 	 * 检查频率, in milliseconds
 	 */
 	private long consistencyCheckRate = 60 * 1000;
-	
-	public ConfigProfile(final String connectStr, final String rootNode, final boolean openLocalCache) {
-		this(connectStr, rootNode, openLocalCache, new ExponentialBackoffRetry(100, 2));
-	}
 
-	public ConfigProfile(final String connectStr, final String rootNode, final boolean openLocalCache, final RetryPolicy retryPolicy) {
+	public ConfigProfile(final String rootNode, final boolean openLocalCache) {
 		super();
-		this.connectStr = Preconditions.checkNotNull(connectStr);
 		this.rootNode = Preconditions.checkNotNull(rootNode);
 		this.openLocalCache = openLocalCache;
-		this.retryPolicy = Preconditions.checkNotNull(retryPolicy);
-	}
-
-	public String getConnectStr() {
-		return connectStr;
 	}
 
 	public String getRootNode() {
 		return rootNode;
 	}
 
-	public RetryPolicy getRetryPolicy() {
-		return retryPolicy;
-	}
 
 	public final boolean isConsistencyCheck() {
 		return consistencyCheck;
@@ -100,10 +73,13 @@ public class ConfigProfile {
 		return openLocalCache;
 	}
 
-	@Override
-	public String toString() {
-		return Objects.toStringHelper(this).add("connectStr", connectStr).add("rootNode", rootNode).add("retryPolicy", retryPolicy)
-				.add("consistencyCheck", consistencyCheck).add("consistencyCheckRate", consistencyCheckRate).add("openLocalCache", openLocalCache)
-				.toString();
-	}
+    @Override
+    public String toString() {
+        return "ConfigProfile{" +
+                "rootNode='" + rootNode + '\'' +
+                ", openLocalCache=" + openLocalCache +
+                ", consistencyCheck=" + consistencyCheck +
+                ", consistencyCheckRate=" + consistencyCheckRate +
+                '}';
+    }
 }

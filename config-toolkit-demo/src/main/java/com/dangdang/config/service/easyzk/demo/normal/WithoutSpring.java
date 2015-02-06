@@ -19,6 +19,9 @@ import com.dangdang.config.service.easyzk.ConfigFactory;
 import com.dangdang.config.service.easyzk.ConfigNode;
 import com.dangdang.config.service.observer.IObserver;
 import com.google.common.base.Preconditions;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.RetryOneTime;
 
 /**
  * @author <a href="mailto:wangyuxuan@dangdang.com">Yuxuan Wang</a>
@@ -27,7 +30,8 @@ import com.google.common.base.Preconditions;
 public class WithoutSpring {
 
 	public static void main(String[] args) {
-		ConfigFactory configFactory = new ConfigFactory("zoo.host1:8181", "/projectx/modulex");
+        CuratorFramework cli = CuratorFrameworkFactory.newClient("zoo.host1:8181", new RetryOneTime(2000));
+		ConfigFactory configFactory = new ConfigFactory("/projectx/modulex", cli);
 
 		ConfigNode propertyGroup1 = configFactory.getConfigNode("property-group1");
 		System.out.println(propertyGroup1);

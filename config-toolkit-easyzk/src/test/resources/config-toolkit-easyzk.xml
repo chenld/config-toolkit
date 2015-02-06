@@ -1,0 +1,59 @@
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="configProfile" class="com.dangdang.config.service.easyzk.ConfigProfile" >
+        <constructor-arg name="rootNode" value="/projectx/modulex" />
+        <constructor-arg name="openLocalCache" value="false" />
+    </bean>
+
+    <bean id="configFactory" class="com.dangdang.config.service.easyzk.ConfigFactory">
+        <!-- Your module node in zookeeper -->
+        <constructor-arg name="configProfile" ref="configProfile"/>
+        <constructor-arg name="client" ref="curatorFramework" />
+    </bean>
+
+    <bean id="zookeeperSources" class="com.dangdang.config.service.easyzk.support.spring.ZookeeperSourceFactory"
+          factory-method="create">
+        <constructor-arg name="configFactory" ref="configFactory"/>
+        <!-- Your property groups -->
+        <constructor-arg name="nodes">
+            <list>
+                <value>property-group1</value>
+                <value>property-group2</value>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+        <property name="order" value="1"/>
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+        <property name="propertySources" ref="zookeeperSources"/>
+    </bean>
+
+    <bean id="curatorFramework" class="com.dangdang.config.service.easyzk.support.spring.CuratorFrameworkFactoryBean">
+        <property name="connectString" value="localhost:2181"/>
+        <property name="namespace" value="test"/>
+        <property name="retryPolicy" ref="exponentialBackoffRetry"/>
+        <!--<property name="sessionTimeout" value="50000" />-->
+    </bean>
+
+    <bean id="exponentialBackoffRetry" class="org.apache.curator.retry.ExponentialBackoffRetry">
+        <constructor-arg index="0" type="int" value="1000"/>
+        <constructor-arg index="1" type="int" value="3"/>
+    </bean>
+
+    <bean class="com.dangdang.config.service.easyzk.support.spring.ZooKeeperAnnotationBeanPostProcessor">
+        <property name="curatorFramework" ref="curatorFramework"/>
+        <property name="configProfile" ref="configProfile" />
+    </bean>
+
+    <!-- Inject property with used spring style -->
+    <bean class="com.dangdang.config.service.easyzk.demo.spring.ExampleBean"
+          c:stringProperty="${property-group1.string_property_key}"
+          c:intProperty="${property-group2.int_property_key}">
+    </bean>
+
+    <bean id="annotationTarget" class="com.dangdang.config.service.easyzk.demo.spring.ZooKeeperAnnotationTarget"/>
+
+</beans>

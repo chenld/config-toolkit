@@ -68,7 +68,13 @@ public final class ConfigNodeEventListener implements CuratorListener {
 				}
 
 				if (someChange && configNode.getConfigLocalCache() != null) {
-					configNode.getConfigLocalCache().saveLocalCache(configNode, configNode.getNode());
+                    configNode.getLock().readLock().lock();
+                    try {
+                        configNode.getConfigLocalCache().saveLocalCache(configNode, configNode.getNode());
+                    }finally {
+                        configNode.getLock().readLock().unlock();
+                    }
+
 				}
 			}
 		}

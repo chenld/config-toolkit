@@ -15,24 +15,6 @@
  */
 package com.dangdang.config.service.easyzk;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import javax.annotation.PreDestroy;
-
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.api.GetChildrenBuilder;
-import org.apache.curator.framework.api.GetDataBuilder;
-import org.apache.curator.utils.ZKPaths;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.dangdang.config.service.observer.AbstractSubject;
 import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
@@ -41,6 +23,17 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.api.GetChildrenBuilder;
+import org.apache.curator.framework.api.GetDataBuilder;
+import org.apache.curator.utils.ZKPaths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.PreDestroy;
+import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 节点
@@ -119,7 +112,11 @@ public class ConfigNode extends AbstractSubject {
 
 	private ReadWriteLock lock = new ReentrantReadWriteLock();
 
-	/**
+    public ReadWriteLock getLock() {
+        return lock;
+    }
+
+    /**
 	 * 加载节点并监听节点变化
 	 */
 	void loadNode() {
@@ -210,7 +207,7 @@ public class ConfigNode extends AbstractSubject {
 			LOGGER.trace("Key data not change, ignore: key[{}]", nodeName);
 		} else {
 			LOGGER.debug("Loading data: key[{}] - value[{}]", nodeName, childValue);
-			properties.put(nodeName, childValue);
+			properties.put(getKey(nodeName), childValue);
 
 			// 通知注册者
 			notify(nodeName, childValue);
@@ -285,5 +282,9 @@ public class ConfigNode extends AbstractSubject {
 		return Objects.toStringHelper(this).add("configProfile", configProfile).add("node", node).add("keyLoadingMode", keyLoadingMode)
 				.add("keysSpecified", keysSpecified).add("properties", properties).toString();
 	}
+
+    private String getKey(String nodeName){
+        return node + "." + nodeName;
+    }
 
 }
