@@ -41,14 +41,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author <a href="mailto:wangyuxuan@dangdang.com">Yuxuan Wang</a>
  *
  */
-public class ConfigNode extends AbstractSubject {
+public class ConfigGroup extends AbstractSubject {
 
 	private ConfigProfile configProfile;
 
 	/**
 	 * 节点名字
 	 */
-	String node;
+	String group;
 
 	private KeyLoadingMode keyLoadingMode;
 
@@ -70,13 +70,13 @@ public class ConfigNode extends AbstractSubject {
 	 */
 	private final Map<String, String> properties = Maps.newConcurrentMap();
 
-	static final Logger LOGGER = LoggerFactory.getLogger(ConfigNode.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(ConfigGroup.class);
 
-	protected ConfigNode(ConfigProfile configProfile, CuratorFramework client, String node) {
+	protected ConfigGroup(ConfigProfile configProfile, CuratorFramework client, String group) {
 		super();
 		this.configProfile = configProfile;
 		this.client = client;
-		this.node = node;
+		this.group = group;
 	}
 
 	public void defineKeyLoadingPattern(KeyLoadingMode keyLoadingMode, Set<String> keysSpecified) {
@@ -94,7 +94,7 @@ public class ConfigNode extends AbstractSubject {
 
 		// Update local cache
 		if (configLocalCache != null) {
-			configLocalCache.saveLocalCache(this, node);
+			configLocalCache.saveLocalCache(this, group);
 		}
 
 		// Consistency check
@@ -103,7 +103,7 @@ public class ConfigNode extends AbstractSubject {
 
 				@Override
 				public void run() {
-					LOGGER.debug("Do consistency check for node: {}", node);
+					LOGGER.debug("Do consistency check for group: {}", group);
 					consistencyCheck();
 				}
 			}, 0L, configProfile.getConsistencyCheckRate());
@@ -120,7 +120,7 @@ public class ConfigNode extends AbstractSubject {
 	 * 加载节点并监听节点变化
 	 */
 	void loadNode() {
-		final String nodePath = ZKPaths.makePath(configProfile.getRootNode(), node);
+		final String nodePath = ZKPaths.makePath(configProfile.getRootNode(), group);
 		LOGGER.debug("Loading properties for node: {}, with loading mode: {} and keys specified: {}", nodePath, keyLoadingMode, keysSpecified);
 
 		GetChildrenBuilder childrenBuilder = client.getChildren();
@@ -147,7 +147,7 @@ public class ConfigNode extends AbstractSubject {
 	 * 一致性检查
 	 */
 	void consistencyCheck() {
-		final String nodePath = ZKPaths.makePath(configProfile.getRootNode(), node);
+		final String nodePath = ZKPaths.makePath(configProfile.getRootNode(), group);
 		GetChildrenBuilder childrenBuilder = client.getChildren();
 		try {
 			List<String> children = childrenBuilder.watched().forPath(nodePath);
@@ -207,10 +207,10 @@ public class ConfigNode extends AbstractSubject {
 			LOGGER.trace("Key data not change, ignore: key[{}]", nodeName);
 		} else {
 			LOGGER.debug("Loading data: key[{}] - value[{}]", nodeName, childValue);
-			properties.put(getKey(nodeName), childValue);
-
+            String groupKey = getGroupKey(nodeName);
+			properties.put(groupKey, childValue);
 			// 通知注册者
-			notify(nodeName, childValue);
+			notify(groupKey, childValue);
 		}
 	}
 
@@ -239,8 +239,8 @@ public class ConfigNode extends AbstractSubject {
 		}
 	}
 
-	public String getNode() {
-		return node;
+	public String getGroup() {
+		return group;
 	}
 
 	public ConfigLocalCache getConfigLocalCache() {
@@ -279,12 +279,17 @@ public class ConfigNode extends AbstractSubject {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this).add("configProfile", configProfile).add("node", node).add("keyLoadingMode", keyLoadingMode)
+		return Objects.toStringHelper(this).add("configProfile", configProfile).add("node", group).add("keyLoadingMode", keyLoadingMode)
 				.add("keysSpecified", keysSpecified).add("properties", properties).toString();
 	}
 
-    private String getKey(String nodeName){
-        return node + "." + nodeName;
+    /**
+     * get key like group.key
+     * @param nodeName
+     * @return
+     */
+    private String getGroupKey(String nodeName){
+        return group + "." + nodeName;
     }
 
 }

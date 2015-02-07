@@ -14,12 +14,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface ZooKeeper {
 
-    String value() default "";
-
     /**
      * 节点
      */
-    String node();
+    String group();
 
     /**
      * 节点下的key值

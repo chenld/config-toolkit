@@ -15,21 +15,34 @@
  */
 package com.dangdang.config.service.easyzk;
 
-import com.dangdang.config.service.easyzk.ConfigNode.KeyLoadingMode;
-import com.dangdang.config.service.easyzk.support.localoverride.OverridedConfigNode;
+import com.dangdang.config.service.easyzk.ConfigGroup.KeyLoadingMode;
+import com.dangdang.config.service.easyzk.support.localoverride.OverridedConfigGroup;
+import com.dangdang.config.service.observer.CompositeObserver;
+import com.dangdang.config.service.observer.IObserver;
+import com.dangdang.config.service.observer.Observer;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.annotation.AnnotationUtils;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 配置工厂
  *
  * @author <a href="mailto:wangyuxuan@dangdang.com">Yuxuan Wang</a>
  */
-public final class ConfigFactory {
+public final class ConfigFactory implements ApplicationContextAware, InitializingBean {
 
     private ConfigProfile configProfile;
 
@@ -38,6 +51,12 @@ public final class ConfigFactory {
     private CuratorFramework client;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigFactory.class);
+
+    private Map<String, CompositeObserver> compositeObserverMap = Maps.newConcurrentMap();
+
+    private ApplicationContext context;
+
+    private ExecutorService executorService = Executors.newCachedThreadPool();
 
     public ConfigFactory(String rootNode, CuratorFramework client) {
         this(rootNode, false, client);
@@ -63,33 +82,63 @@ public final class ConfigFactory {
     /**
      * 获取配置节点
      *
-     * @param node 节点名字
+     * @param group 节点名字
      * @return
      */
-    public ConfigNode getConfigNode(String node) {
-        return getConfigNode(node, KeyLoadingMode.NONE, null);
+    public ConfigGroup getConfigNode(String group) {
+        return getConfigGroup(group, KeyLoadingMode.NONE, null);
     }
 
     /**
      * 获取配置节点
      *
-     * @param node           节点名字
+     * @param group           节点名字
      * @param keyLoadingMode 节点下属性的加载模式
      * @param keysSpecified  需要包含或排除的key,与{@code KeyLoadingMode}配合使用
      * @return
      */
-    public ConfigNode getConfigNode(String node, KeyLoadingMode keyLoadingMode, Set<String> keysSpecified) {
-        LOGGER.debug("Get node[{}] with mode[{}] and keys[{}]", node, keyLoadingMode, keysSpecified);
+    public ConfigGroup getConfigGroup(String group, KeyLoadingMode keyLoadingMode, Set<String> keysSpecified) {
+        LOGGER.debug("Get group[{}] with mode[{}] and keys[{}]", group, keyLoadingMode, keysSpecified);
 
-        final ConfigNode configNode = new OverridedConfigNode(configProfile, client, node);
-
+        ConfigGroup configGroup = new OverridedConfigGroup(configProfile, client, group);
+        configGroup.setCompositeObserver(compositeObserverMap.get(group));
         // Load configurations in remote zookeeper.
-        configNode.defineKeyLoadingPattern(keyLoadingMode, keysSpecified);
+        configGroup.defineKeyLoadingPattern(keyLoadingMode, keysSpecified);
         // config local cache
-        configNode.setConfigLocalCache(configLocalCache);
+        configGroup.setConfigLocalCache(configLocalCache);
 
-        configNode.initConfigNode();
-        return configNode;
+        configGroup.initConfigNode();
+        return configGroup;
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        context = applicationContext;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        Map<String, IObserver> watchers = context.getBeansOfType(IObserver.class, false, true);
+        for (Map.Entry<String, IObserver> entry : watchers.entrySet()) {
+            IObserver watcher = entry.getValue();
+            Observer observer = AnnotationUtils.findAnnotation(watcher.getClass(), Observer.class);
+            if (observer != null) {
+                String group = observer.group();
+                String key = observer.key();
+                if (!Strings.isNullOrEmpty(group)) {
+                    CompositeObserver compositeObserver = compositeObserverMap.get(group);
+                    if (compositeObserver == null) {
+                        compositeObserverMap.put(group, new CompositeObserver(group, executorService));
+                        compositeObserver = compositeObserverMap.get(group);
+                    }
+
+                    String groupKey = group;
+                    if (!Strings.isNullOrEmpty(key)) {
+                        groupKey += "." + key;
+                    }
+                    compositeObserver.addWatchers(groupKey, watcher);
+                }
+            }
+        }
+    }
 }

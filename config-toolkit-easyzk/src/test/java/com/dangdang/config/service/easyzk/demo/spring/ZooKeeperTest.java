@@ -71,8 +71,8 @@ public class ZooKeeperTest {
         String field = annotationTarget.getField();
         Assert.assertEquals(field, "field initial");
 
-        cli.setData().forPath("/projectx/modulex/property-group1" + FIELD_PATH, "liangd.chen".getBytes());
-        System.out.println(annotationTarget.getField());
+//        cli.setData().forPath("/projectx/modulex/property-group1" + FIELD_PATH, "liangd.chen".getBytes());
+//        System.out.println(annotationTarget.getField());
         //Thread.currentThread().join();
     }
 
@@ -86,5 +86,10 @@ public class ZooKeeperTest {
             ctx.close();
         }
     }
+
+
+
+
+
 
 }

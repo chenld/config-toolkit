@@ -15,19 +15,18 @@
  */
 package com.dangdang.config.service.easyzk.support.spring;
 
+import com.dangdang.config.service.easyzk.ConfigGroup;
 import org.springframework.core.env.PropertySource;
-
-import com.dangdang.config.service.easyzk.ConfigNode;
 
 /**
  * Spring Property Sources support
  * @author <a href="mailto:wangyuxuan@dangdang.com">Yuxuan Wang</a>
  *
  */
-public class ZookeeperResource extends PropertySource<ConfigNode> {
+public class ZookeeperResource extends PropertySource<ConfigGroup> {
 	
-	public ZookeeperResource(ConfigNode configNode) {
-		super(configNode.getNode(), configNode);
+	public ZookeeperResource(ConfigGroup configGroup) {
+		super(configGroup.getGroup(), configGroup);
 	}
 
 	@Override

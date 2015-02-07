@@ -15,11 +15,11 @@
  */
 package com.dangdang.config.service.easyzk.support.spring;
 
+import com.dangdang.config.service.easyzk.ConfigGroup;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySources;
 
 import com.dangdang.config.service.easyzk.ConfigFactory;
-import com.dangdang.config.service.easyzk.ConfigNode;
 import com.google.common.base.Preconditions;
 
 /**
@@ -30,24 +30,24 @@ import com.google.common.base.Preconditions;
  */
 public class ZookeeperSourceFactory {
 
-	public static PropertySources create(ConfigNode... configNodes) {
-		Preconditions.checkNotNull(configNodes);
+	public static PropertySources create(ConfigGroup... configGroups) {
+		Preconditions.checkNotNull(configGroups);
 		final MutablePropertySources sources = new MutablePropertySources();
-		for (ConfigNode configNode : configNodes) {
-			sources.addLast(new ZookeeperResource(configNode));
+		for (ConfigGroup configGroup : configGroups) {
+			sources.addLast(new ZookeeperResource(configGroup));
 		}
 		return sources;
 	}
 
-	public static PropertySources create(ConfigFactory configFactory, String... nodes) {
+	public static PropertySources create(ConfigFactory configFactory, String... groups) {
 		Preconditions.checkNotNull(configFactory);
-		Preconditions.checkNotNull(nodes);
-		ConfigNode[] configNodes = new ConfigNode[nodes.length];
-		for (int i = 0; i < nodes.length; i++) {
-			configNodes[i] = configFactory.getConfigNode(nodes[i]);
+		Preconditions.checkNotNull(groups);
+		ConfigGroup[] configGroups = new ConfigGroup[groups.length];
+		for (int i = 0; i < groups.length; i++) {
+			configGroups[i] = configFactory.getConfigNode(groups[i]);
 		}
 
-		return create(configNodes);
+		return create(configGroups);
 	}
 
 }

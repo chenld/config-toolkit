@@ -34,6 +34,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.springframework.util.ReflectionUtils.*;
 
@@ -70,7 +71,7 @@ public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, 
 
     private TypeConverter typeConverter;
 
-    private ConcurrentHashMap<String, Setter<String>> setters = new ConcurrentHashMap<String, Setter<String>>();
+    private ConcurrentMap<String, Setter<String>> setters = new ConcurrentHashMap<String, Setter<String>>();
 
     public void setCurator(CuratorFramework curator) {
         this.curator = curator;
@@ -139,9 +140,7 @@ public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, 
             GetDataBuilder getDataBuilder = curator.getData();
             if (setter.isValid()) {
                 //getDataBuilder.usingWatcher(watcher);
-                if (!setters.containsKey(path)) {
-                    setters.put(path, setter);
-                }
+                setters.putIfAbsent(path, setter);
             }
             byte[] data = getDataBuilder.forPath(path);
             setter.setValue(new String(data, "UTF-8"));
@@ -224,7 +223,7 @@ public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, 
      * @return ZK key节点全路径
      */
     private String makePath(ZooKeeper zooKeeper) {
-        String node = zooKeeper.node();
+        String node = zooKeeper.group();
         String key = zooKeeper.key();
         String path = ZKPaths.makePath(node, key);
         return ZKPaths.makePath(configProfile.getRootNode(), path);
@@ -242,7 +241,7 @@ public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, 
         final WatchedEvent watchedEvent = event.getWatchedEvent();
         if (watchedEvent != null
                 && watchedEvent.getState() == Watcher.Event.KeeperState.SyncConnected
-                && watchedEvent.getType() == EventType.NodeDataChanged) {
+                && (watchedEvent.getType() == EventType.NodeDataChanged || watchedEvent.getType() == EventType.NodeCreated)) {
             String nodePath = watchedEvent.getPath();
             Setter<String> setter = setters.get(nodePath);
 
@@ -251,9 +250,6 @@ public class ZooKeeperAnnotationBeanPostProcessor implements BeanPostProcessor, 
                 String value = new String(data.watched().forPath(nodePath), Charsets.UTF_8);
                 setter.setValue(value);
             }
-
         }
-
-
     }
 }

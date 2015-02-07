@@ -15,9 +15,9 @@
  */
 package com.dangdang.config.service.easyzk.support.spring;
 
-import java.util.Properties;
+import com.dangdang.config.service.easyzk.ConfigGroup;
 
-import com.dangdang.config.service.easyzk.ConfigNode;
+import java.util.Properties;
 
 /**
  * Support for spel, can use with @Value("#{configNode['key']}")
@@ -25,18 +25,16 @@ import com.dangdang.config.service.easyzk.ConfigNode;
  * @author <a href="mailto:wangyuxuan@dangdang.com">Yuxuan Wang</a>
  *
  */
-public class ConfigNodeIndexer extends Properties {
-	/**
-	 * 
-	 */
+public class ConfigGroupIndexer extends Properties {
+
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * @param configNode
+	 * @param configGroup
 	 */
-	public ConfigNodeIndexer(ConfigNode configNode) {
+	public ConfigGroupIndexer(ConfigGroup configGroup) {
 		super();
-		this.putAll(configNode.exportProperties());
+		this.putAll(configGroup.exportProperties());
 	}
 
 }

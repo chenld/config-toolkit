@@ -15,35 +15,34 @@
  */
 package com.dangdang.config.service.easyzk.support.localoverride;
 
-import java.util.Map;
-
+import com.dangdang.config.service.easyzk.ConfigGroup;
+import com.dangdang.config.service.easyzk.ConfigProfile;
+import com.google.common.collect.Maps;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dangdang.config.service.easyzk.ConfigNode;
-import com.dangdang.config.service.easyzk.ConfigProfile;
-import com.google.common.collect.Maps;
+import java.util.Map;
 
 /**
- * ConfigNode with local configurations overrided
+ * ConfigGroup with local configurations overrided
  * 
  * @author <a href="mailto:wangyuxuan@dangdang.com">Yuxuan Wang</a>
  *
  */
-public class OverridedConfigNode extends ConfigNode {
+public class OverridedConfigGroup extends ConfigGroup {
 
 	private Map<String, String> localProperties;
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(OverridedConfigNode.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(OverridedConfigGroup.class);
 
 	/**
 	 * @param configProfile
-	 * @param node
+	 * @param group
 	 */
-	public OverridedConfigNode(ConfigProfile configProfile, CuratorFramework client, String node) {
-		super(configProfile, client, node);
-		localProperties = LocalOverrideFileLoader.loadLocalProperties(configProfile.getRootNode(), node);
+	public OverridedConfigGroup(ConfigProfile configProfile, CuratorFramework client, String group) {
+		super(configProfile, client, group);
+		localProperties = LocalOverrideFileLoader.loadLocalProperties(configProfile.getRootNode(), group);
 		LOGGER.info("Loading local override configs: {}", localProperties);
 	}
 

@@ -54,14 +54,14 @@ public class ConfigLocalCache {
 	/**
 	 * 缓存配置到本地
 	 * 
-	 * @param configNode
+	 * @param configGroup
 	 * @param node
 	 */
-	public void saveLocalCache(ConfigNode configNode, String node) {
+	public void saveLocalCache(ConfigGroup configGroup, String node) {
 		String localFilePath = genCacheFilePath(node);
 		LOGGER.debug("Saving cache to file: {}", localFilePath);
 
-		Map<String, String> data = configNode.exportProperties();
+		Map<String, String> data = configGroup.exportProperties();
 		if (data != null && data.size() > 0) {
 			Properties properties = new Properties();
 			for (Entry<String, String> entry : data.entrySet()) {

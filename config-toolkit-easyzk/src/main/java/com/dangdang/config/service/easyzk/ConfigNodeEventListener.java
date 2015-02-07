@@ -35,11 +35,11 @@ public final class ConfigNodeEventListener implements CuratorListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConfigNodeEventListener.class);
 
-	private final ConfigNode configNode;
+	private final ConfigGroup configGroup;
 
-	public ConfigNodeEventListener(ConfigNode configNode) {
+	public ConfigNodeEventListener(ConfigGroup configGroup) {
 		super();
-		this.configNode = Preconditions.checkNotNull(configNode);
+		this.configGroup = Preconditions.checkNotNull(configGroup);
 	}
 
 	@Override
@@ -56,23 +56,23 @@ public final class ConfigNodeEventListener implements CuratorListener {
 				boolean someChange = false;
 				switch (watchedEvent.getType()) {
 				case NodeChildrenChanged:
-					configNode.loadNode();
+					configGroup.loadNode();
 					someChange = true;
 					break;
 				case NodeDataChanged:
-					configNode.loadKey(watchedEvent.getPath());
+					configGroup.loadKey(watchedEvent.getPath());
 					someChange = true;
 					break;
 				default:
 					break;
 				}
 
-				if (someChange && configNode.getConfigLocalCache() != null) {
-                    configNode.getLock().readLock().lock();
+				if (someChange && configGroup.getConfigLocalCache() != null) {
+                    configGroup.getLock().readLock().lock();
                     try {
-                        configNode.getConfigLocalCache().saveLocalCache(configNode, configNode.getNode());
+                        configGroup.getConfigLocalCache().saveLocalCache(configGroup, configGroup.getGroup());
                     }finally {
-                        configNode.getLock().readLock().unlock();
+                        configGroup.getLock().readLock().unlock();
                     }
 
 				}

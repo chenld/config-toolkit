@@ -29,7 +29,7 @@
           factory-method="create">
         <constructor-arg name="configFactory" ref="configFactory"/>
         <!-- Your property groups -->
-        <constructor-arg name="nodes">
+        <constructor-arg name="groups">
             <list>
                 <value>property-group1</value>
                 <value>property-group2</value>
@@ -58,4 +58,6 @@
 
     <bean id="annotationTarget" class="com.dangdang.config.service.easyzk.demo.spring.ZooKeeperAnnotationTarget"/>
 
+    <bean class="com.dangdang.config.service.easyzk.demo.spring.observer.GroupObserver"/>
+    <bean class="com.dangdang.config.service.easyzk.demo.spring.observer.GroupKeyObserver"/>
 </beans>

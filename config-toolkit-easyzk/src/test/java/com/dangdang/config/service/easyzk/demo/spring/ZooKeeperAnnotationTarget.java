@@ -9,7 +9,7 @@ public class ZooKeeperAnnotationTarget implements InitializingBean, DisposableBe
     public static final String FIELD_PATH = "/field";
     public static final String METHOD_PATH = "/method";
     public static final String NONEXISTENT_PATH = "/nonexistent";
-    @ZooKeeper(node = "property-group1", key = FIELD_PATH)
+    @ZooKeeper(group = "property-group1", key = FIELD_PATH)
     private String field;
     private String method;
     private String nonexistent;
@@ -26,7 +26,7 @@ public class ZooKeeperAnnotationTarget implements InitializingBean, DisposableBe
         return method;
     }
 
-    @ZooKeeper(node = "property-group2", key = METHOD_PATH)
+    @ZooKeeper(group = "property-group2", key = METHOD_PATH)
     public void setMethod(final String method) {
         this.method = method;
         print("setter");
@@ -36,7 +36,7 @@ public class ZooKeeperAnnotationTarget implements InitializingBean, DisposableBe
         return nonexistent;
     }
 
-    @ZooKeeper(node = "property-group2", key = NONEXISTENT_PATH)
+    @ZooKeeper(group = "property-group2", key = NONEXISTENT_PATH)
     public void setNonexistent(final String nonexistent) {
         this.nonexistent = nonexistent;
         print("nonexistent");
