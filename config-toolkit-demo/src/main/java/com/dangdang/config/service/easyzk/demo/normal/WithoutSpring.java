@@ -16,7 +16,7 @@
 package com.dangdang.config.service.easyzk.demo.normal;
 
 import com.dangdang.config.service.easyzk.ConfigFactory;
-import com.dangdang.config.service.easyzk.ConfigNode;
+import com.dangdang.config.service.easyzk.ConfigGroup;
 import com.dangdang.config.service.observer.IObserver;
 import com.google.common.base.Preconditions;
 import org.apache.curator.framework.CuratorFramework;
@@ -33,7 +33,7 @@ public class WithoutSpring {
         CuratorFramework cli = CuratorFrameworkFactory.newClient("zoo.host1:8181", new RetryOneTime(2000));
 		ConfigFactory configFactory = new ConfigFactory("/projectx/modulex", cli);
 
-		ConfigNode propertyGroup1 = configFactory.getConfigNode("property-group1");
+		ConfigGroup propertyGroup1 = configFactory.getConfigNode("property-group1");
 		System.out.println(propertyGroup1);
 
 		// Listen changes
@@ -42,7 +42,7 @@ public class WithoutSpring {
 			public void notifiy(String data, String value) {
 				// Some initialization
 			}
-		});
+		},"property-group1");
 
 		String stringProperty = propertyGroup1.getProperty("string_property_key");
 		Preconditions.checkState("Welcome here.".equals(stringProperty));

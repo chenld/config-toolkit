@@ -16,7 +16,7 @@
 package com.dangdang.config.service.easyzk.demo.spring.annotation;
 
 import com.dangdang.config.service.easyzk.ConfigFactory;
-import com.dangdang.config.service.easyzk.ConfigNode;
+import com.dangdang.config.service.easyzk.ConfigGroup;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryOneTime;
@@ -39,7 +39,7 @@ public class ConfigCenter {
     }
 
     @Bean(name = "propertyGroup1")
-    public ConfigNode getPropertyGroup1(ConfigFactory configFactory) {
+    public ConfigGroup getPropertyGroup1(ConfigFactory configFactory) {
         return configFactory.getConfigNode("property-group1");
     }
 }

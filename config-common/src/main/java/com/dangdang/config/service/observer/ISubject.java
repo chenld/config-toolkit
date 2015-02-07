@@ -24,12 +24,13 @@ package com.dangdang.config.service.observer;
  */
 public interface ISubject {
 
-	/**
-	 * 注册观察者
-	 * 
-	 * @param watcher
-	 */
-	boolean register(IObserver watcher, String groupKey);
+    /**
+     * 注册观察者
+     * @param watcher
+     * @param groupKey
+     * @return
+     */
+	boolean register(final IObserver watcher, String groupKey);
 
 	/**
 	 * 通知观察者

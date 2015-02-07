@@ -3,7 +3,7 @@
  */
 package com.dangdang.config.service.easyzk.demo;
 
-import com.dangdang.config.service.easyzk.ConfigNode;
+import com.dangdang.config.service.easyzk.ConfigGroup;
 
 /**
  * @author <a href="mailto:wangyuxuan@dangdang.com">Yuxuan Wang</a>
@@ -11,13 +11,13 @@ import com.dangdang.config.service.easyzk.ConfigNode;
  */
 public class ExampleBeanWithConfigNode {
 	
-	private ConfigNode propertyGroup1;
+	private ConfigGroup propertyGroup1;
 	
 	public void someMethod(){
 		System.out.println(propertyGroup1.getProperty("someKey"));
 	}
 
-	public void setPropertyGroup1(ConfigNode propertyGroup1) {
+	public void setPropertyGroup1(ConfigGroup propertyGroup1) {
 		this.propertyGroup1 = propertyGroup1;
 	}
 

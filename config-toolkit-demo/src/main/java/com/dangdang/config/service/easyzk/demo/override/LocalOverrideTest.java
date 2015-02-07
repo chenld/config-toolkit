@@ -16,7 +16,7 @@
 package com.dangdang.config.service.easyzk.demo.override;
 
 import com.dangdang.config.service.easyzk.ConfigFactory;
-import com.dangdang.config.service.easyzk.ConfigNode;
+import com.dangdang.config.service.easyzk.ConfigGroup;
 import com.dangdang.config.service.observer.IObserver;
 import com.google.common.base.Preconditions;
 import org.apache.curator.framework.CuratorFramework;
@@ -34,7 +34,7 @@ public class LocalOverrideTest {
 
         ConfigFactory configFactory = new ConfigFactory("/projectx/modulex", cli);
 
-		ConfigNode propertyGroup1 = configFactory.getConfigNode("property-group1");
+		ConfigGroup propertyGroup1 = configFactory.getConfigNode("property-group1");
 		System.out.println(propertyGroup1);
 		
 		// Listen changes
@@ -43,7 +43,7 @@ public class LocalOverrideTest {
 			public void notifiy(String data, String value) {
 				// Some initialization
 			}
-		});
+		}, "group1");
 
 		String stringProperty = propertyGroup1.getProperty("string_property_key");
 		System.out.println(stringProperty);

@@ -16,7 +16,7 @@
 	</bean>
 	
 	<!-- Config Node -->
-	<bean id="someGroup" class="com.dangdang.config.service.easyzk.ConfigNode" factory-bean="configFactory" factory-method="getConfigNode">
+	<bean id="someGroup" class="com.dangdang.config.service.easyzk.ConfigGroup" factory-bean="configFactory" factory-method="getConfigNode">
 		<constructor-arg name="node" value="property-group1" />
 	</bean>
 	

@@ -254,7 +254,7 @@ public class NodeDataManagedBean implements Serializable, IObserver {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * com.dangdang.config.service.observer.IObserver#notifiy(java.lang.String,
+	 * com.dangdang.config.service.notify.IObserver#notifiy(java.lang.String,
 	 * java.lang.String)
 	 */
 	@Override
