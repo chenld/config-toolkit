@@ -58,6 +58,6 @@
 
     <bean id="annotationTarget" class="com.dangdang.config.service.easyzk.demo.spring.ZooKeeperAnnotationTarget"/>
 
-    <bean class="com.dangdang.config.service.easyzk.demo.spring.observer.GroupObserver"/>
-    <bean class="com.dangdang.config.service.easyzk.demo.spring.observer.GroupKeyObserver"/>
+    <bean class="com.dangdang.config.service.easyzk.demo.spring.notify.GroupObserver"/>
+    <bean class="com.dangdang.config.service.easyzk.demo.spring.notify.GroupKeyObserver"/>
 </beans>

@@ -6,16 +6,24 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * group.key
+ * 定义节点触发事件
+ * 1.当key为空时，则定义组级别事件
+ * 2.当key不为空时，则定义属性级别事件
  *
  * @author liangd.chen
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface Observer {
+public @interface Notify {
 
+    /**
+     * 组
+     */
     String group();
 
+    /**
+     * 属性
+     */
     String key() default "";
 
 }

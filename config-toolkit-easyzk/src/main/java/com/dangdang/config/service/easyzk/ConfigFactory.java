@@ -19,7 +19,7 @@ import com.dangdang.config.service.easyzk.ConfigGroup.KeyLoadingMode;
 import com.dangdang.config.service.easyzk.support.localoverride.OverridedConfigGroup;
 import com.dangdang.config.service.observer.CompositeObserver;
 import com.dangdang.config.service.observer.IObserver;
-import com.dangdang.config.service.observer.Observer;
+import com.dangdang.config.service.observer.Notify;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -121,10 +121,10 @@ public final class ConfigFactory implements ApplicationContextAware, Initializin
         Map<String, IObserver> watchers = context.getBeansOfType(IObserver.class, false, true);
         for (Map.Entry<String, IObserver> entry : watchers.entrySet()) {
             IObserver watcher = entry.getValue();
-            Observer observer = AnnotationUtils.findAnnotation(watcher.getClass(), Observer.class);
-            if (observer != null) {
-                String group = observer.group();
-                String key = observer.key();
+            Notify notify = AnnotationUtils.findAnnotation(watcher.getClass(), Notify.class);
+            if (notify != null) {
+                String group = notify.group();
+                String key = notify.key();
                 if (!Strings.isNullOrEmpty(group)) {
                     CompositeObserver compositeObserver = compositeObserverMap.get(group);
                     if (compositeObserver == null) {

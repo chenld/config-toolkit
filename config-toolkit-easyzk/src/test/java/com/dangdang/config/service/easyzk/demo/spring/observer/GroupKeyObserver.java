@@ -1,12 +1,12 @@
 package com.dangdang.config.service.easyzk.demo.spring.observer;
 
 import com.dangdang.config.service.observer.IObserver;
-import com.dangdang.config.service.observer.Observer;
+import com.dangdang.config.service.observer.Notify;
 
 /**
  * @author liangd.chen
  */
-@Observer(group = "property-group1", key = "string_property_key")
+@Notify(group = "property-group1", key = "string_property_key")
 class GroupKeyObserver implements IObserver {
     @Override
     public void notify(String groupKey, String value) {
