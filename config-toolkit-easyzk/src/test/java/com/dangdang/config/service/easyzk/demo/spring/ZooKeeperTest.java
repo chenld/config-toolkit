@@ -1,5 +1,6 @@
 package com.dangdang.config.service.easyzk.demo.spring;
 
+import com.dangdang.config.service.easyzk.demo.spring.config.CenterConfig;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryOneTime;
@@ -11,6 +12,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.IOException;
@@ -64,7 +66,8 @@ public class ZooKeeperTest {
 
         System.setProperty("zk.connectString", zkTestServer.getConnectString());
 
-        ctx = new ClassPathXmlApplicationContext("classpath:config-toolkit-easyzk.xml");
+        //ctx = new ClassPathXmlApplicationContext("classpath:config-toolkit-easyzk.xml");
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(CenterConfig.class);
         ctx.start();
 
         annotationTarget = ctx.getBean(ZooKeeperAnnotationTarget.class);
