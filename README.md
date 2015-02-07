@@ -75,9 +75,9 @@
 </code></pre>
 Config-toolkit支持：
 <pre><code>
-	&lt;bean name="configToolkitCommon" class="com.dangdang.config.service.easyzk.support.spring.ConfigNodeIndexer">
-		&lt;constructor-arg name="configNode"&gt;
-			&lt;bean class="com.dangdang.config.service.easyzk.ConfigNode" 
+	&lt;bean name="configToolkitCommon" class="com.dangdang.config.service.easyzk.support.spring.ConfigGroupIndexer">
+		&lt;constructor-arg name="configGroup"&gt;
+			&lt;bean class="com.dangdang.config.service.easyzk.ConfigGroup"
 				factory-bean="configFactory" factory-method="getConfigNode"&gt;
 				&lt;constructor-arg name="node" value="config-toolkit" /&gt;
 			&lt;/bean&gt;
