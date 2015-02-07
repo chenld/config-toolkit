@@ -24,11 +24,11 @@ package com.dangdang.config.service.observer;
  */
 public interface IObserver {
 
-	/**
-	 * 通知
-	 * 
-	 * @param data
-	 */
-	void notifiy(String data, String value);
+    /**
+     * 通知
+     * @param groupKey
+     * @param value
+     */
+	void notify(String groupKey, String value);
 
 }

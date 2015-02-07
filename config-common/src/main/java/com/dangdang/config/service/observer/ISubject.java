@@ -29,14 +29,14 @@ public interface ISubject {
 	 * 
 	 * @param watcher
 	 */
-	void register(IObserver watcher);
+	boolean register(IObserver watcher, String groupKey);
 
 	/**
 	 * 通知观察者
 	 * 
-	 * @param key
+	 * @param groupKey
 	 * @param value
 	 */
-	void notify(String key, String value);
+	void notify(String groupKey, String value);
 
 }
